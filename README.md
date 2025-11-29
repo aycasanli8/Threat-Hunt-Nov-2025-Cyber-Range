@@ -1,197 +1,214 @@
-# Threat-Hunt-Nov-2025-Cyber-Range - INCIDENT RESPONSE REPORT
 # INCIDENT RESPONSE REPORT
 
-**Report ID:** INC-2025-XXXX  
+**Date of Report:** 2025-11-23  
+
+**Severity Level:** ☐ LOW  ☐ MEDIUM  ☒ HIGH  ☐ CRITICAL  
+
+**Report Status:** ☐ Open  ☒ Contained  ☐ Eradicated  
+
+**Escalated To:** [Pending / Security Team]  
+
+**Incident ID:** INC-2025-XXXX  
+
 **Analyst:** Ayca Sanli  
-**Investigation Date:** 23-Nov-2025  
-**Incident Date:** 19-Nov-2025  
 
 ---
 
-## 🟦 Executive Summary
+## SUMMARY OF FINDINGS
 
-Between 19 November 2025 and 20 November 2025, the AZUKI-SL workstation was compromised through unauthorized Remote Desktop Protocol (RDP) access originating from the external IP `88.97.178.12` using the stolen credentials of `kenji.sato`. After gaining interactive access, the attacker executed a multi-stage intrusion involving defense evasion, credential harvesting, persistence establishment, data exfiltration, and attempted lateral movement toward another internal system.
-
-The threat actor created a hidden malware staging directory, downloaded multiple malicious payloads, disabled Windows Defender scanning, deployed a scheduled task for persistence, and extracted credentials using `mm.exe` with `sekurlsa::logonpasswords`. Later, the attacker compressed collected data into `export-data.zip` and exfiltrated it via Discord. Attempts were made to move laterally using `mstsc.exe` toward `10.1.0.188`.
-
-Based on the breadth of actions performed—including credential access, data theft, log tampering, and lateral movement—the impact severity of this incident is assessed as **High**, and the compromise has been fully contained following removal of persistence mechanisms and malicious artifacts.
-
-**What Happened:**  
-
-**Impact Level:** ☐ Low ☐ Medium ☒ High ☐ Critical  
-**Status:** ☒ Contained ☐ Eradicated ☐ In Progress    
+- Unauthorized RDP access to AZUKI-SL using stolen credentials.  
+- Multi-stage intrusion: defense evasion, credential harvesting, persistence, data exfiltration.  
+- Backdoor account `support` created and event logs cleared.  
+- Data exfiltrated via Discord using `curl.exe`.  
+- Attempted lateral movement to 10.1.0.188.  
 
 ---
 
-## INCIDENT DETAILS
+## WHO, WHAT, WHEN, WHERE, WHY, HOW
 
-### Timeline
-- **First Malicious Activity:** 19-Nov-2025 11:33 AM UTC  
-- **Last Observed Activity:** 19-Nov-2025 12:45 PM UTC  
-- **Total Duration:** ~1 hour 12 minutes  
+### WHO
 
-### Attack Overview
-- **Initial Access Method:** RDP via stolen credentials  
-- **Compromised Account:** kenji.sato  
-- **Affected System:** AZUKI-SL  
-- **Attacker IP Address:** 78.141.196.6  
+**Attacker:**  
 
-### Attack Chain (What did the attacker do?)
-- **Initial Access (TA0001):** Attacker logged in via RDP from `88.97.178.12` using stolen credentials of `kenji.sato`.  
-- **Execution (TA0002):** Executed malicious PowerShell script `wupdate.ps1` to automate payload deployment.  
-- **Persistence (TA0003):** Created a scheduled task named `Windows Update Check` pointing to `C:\ProgramData\WindowsCache\svchost.exe`.  
-- **Defense Evasion (TA0005):** Created hidden directory `C:\ProgramData\WindowsCache`, added Defender exclusions (extensions & temp folder), and used `certutil.exe` for downloading payloads.  
-- **Discovery (TA0007):** Executed `arp -a` for local network reconnaissance.  
-- **Credential Access (TA0006):** Used `mm.exe` to run `sekurlsa::logonpasswords` for credential harvesting.  
-- **Lateral Movement (TA0008):** Attempted RDP connection to `10.1.0.188` using `mstsc.exe` and `cmdkey`.  
-- **Collection (TA0009):** Compressed stolen data into `export-data.zip`.  
-- **Command & Control (TA0011):** Communicated with external server `78.141.196.6` over port 443.  
-- **Exfiltration (TA0010):** Uploaded ZIP archive via Discord webhook using `curl.exe`.  
-- **Impact (TA0040):** Created backdoor user `support` and cleared Security event logs.  
+- Initial Access IP: 88.97.178.12  
+- C2 Server IP: 78.141.196.6  
+
+**Compromised:**  
+
+- Account: kenji.sato  
+- System: AZUKI-SL  
 
 ---
 
-## KEY FINDINGS
+### WHAT
 
-**Primary IOCs:**
+1. Attacker logged in via RDP using stolen credentials.  
+2. Executed malicious PowerShell scripts (`wupdate.ps1`) to deploy payloads.  
+3. Created hidden malware staging directory and added Defender exclusions.  
+4. Downloaded and executed `mm.exe` for credential harvesting.  
+5. Compressed data into `export-data.zip` and exfiltrated via Discord.  
+6. Created persistent backdoor account `support`.  
+7. Cleared Security, System, and Application logs.  
+8. Attempted lateral movement to 10.1.0.188.  
 
-| Type            | Value                     | Description                         |
-|-----------------|---------------------------|-------------------------------------|
-| IP Address       | 88.97.178.12              | Attacker RDP source                  |
-| IP Address       | 78.141.196.6              | Command & Control server             |
-| File             | wupdate.ps1               | Malicious execution script           |
-| File             | mm.exe                    | Credential theft tool                |
-| File             | export-data.zip           | Staged and exfiltrated data archive  |
-| Account          | kenji.sato                | Compromised legitimate user          |
-| Account          | support                   | Persistent backdoor account          |
-| Domain           | discord.com               | Exfiltration channel                 |
-| Hash             | N/A                        | Hash not available                  |
+---
+
+### WHEN
+
+| Date/Time | Event |
+| --- | --- |
+| Nov 19, 2025 11:33:00 AM | RDP session initiated |
+| Nov 19, 2025 11:37:40 AM | `wupdate.ps1` downloaded & executed |
+| Nov 19, 2025 11:46:12 AM | `wupdate.bat` downloaded |
+| Nov 19, 2025 11:49:05 AM | Temporary folder & hidden cache created; Defender exclusions added |
+| Nov 19, 2025 12:03:21 PM | Malicious script run |
+| Nov 19, 2025 12:07:04 PM | `mm.exe` executed for credential harvesting |
+| Nov 19, 2025 12:07:35 PM | Scheduled task `Windows Update Check` created |
+| Nov 19, 2025 12:08:11 PM | Collected data compressed (`export-data.zip`) |
+| Nov 19, 2025 12:09:02 PM | Data exfiltrated via Discord |
+| Nov 19, 2025 12:09:42 PM | Backdoor user `support` created |
+| Nov 19, 2025 12:10:17 PM | Lateral movement attempted to 10.1.0.188 |
+| Nov 19, 2025 12:11:05 PM | Logs cleared & C2 communication initiated |
+| Nov 19, 2025 12:45:00 PM | Defender manifest installation completed |
+
+---
+
+### WHERE
+
+**Compromised:** AZUKI-SL  
+
+**Infrastructure:**  
+
+- Attacker IP: 88.97.178.12  
+- C2 Server: 78.141.196.6  
+
+**Malware locations:**  
+
+- `C:\ProgramData\WindowsCache\svchost.exe`  
+- `C:\ProgramData\WindowsCache\mm.exe`  
+- `C:\ProgramData\WindowsCache\export-data.zip`  
+
+---
+
+### WHY
+
+**Root Cause:**  
+
+- Stolen credentials used due to insufficient password security and lack of MFA.  
+
+**Attacker Objective:**  
+
+- Credential theft, data exfiltration, persistence, and lateral movement within network.  
+
+---
+
+### HOW
+
+1. Initial Access via RDP.  
+2. PowerShell script execution for payload deployment.  
+3. Malware staging & defense evasion (hidden folders, Defender exclusions).  
+4. Credential harvesting using Mimikatz variant (`mm.exe`).  
+5. Data collected, compressed, and exfiltrated via Discord webhook.  
+6. Persistence established with scheduled task and backdoor user.  
+7. Anti-forensics by clearing Windows event logs.  
+8. Attempted lateral movement to internal host.  
+
+---
+
+## IMPACT ASSESSMENT
+
+**Actual Impact:**  
+
+- High risk of sensitive data exposure.  
+- Compromise of user credentials and potential lateral movement.  
+
+**Risk Level:** HIGH  
 
 ---
 
 ## RECOMMENDATIONS
 
-### Immediate Actions (Do Now)
-1. Reset all credentials for affected and adjacent accounts.  
-2. Remove persistence mechanisms (scheduled tasks, malicious files).  
-3. Block malicious IPs and Discord webhook endpoints at firewall.  
+### IMMEDIATE
 
-### Short-term (1-30 days)
-1. Conduct full credential hygiene and domain-wide password reset.  
-2. Deploy enhanced endpoint monitoring & EDR alerting rules.  
-3. Perform internal network sweep for similar artifacts on lateral targets.  
+- Reset all credentials for affected and adjacent accounts.  
+- Remove persistence mechanisms (scheduled tasks, malware files).  
+- Block malicious IPs and Discord webhook endpoints at firewall.  
 
-### Long-term (Security Improvements)
-1. Enforce MFA for all remote access including RDP.  
-2. Implement Zero Trust network segmentation to reduce lateral movement.  
-3. Harden endpoint baseline: remove admin rights, enforce Defender policies.  
+### SHORT-TERM (1-30 Days)
+
+- Domain-wide password reset and credential hygiene.  
+- Deploy enhanced endpoint monitoring & EDR alerting rules.  
+- Perform network sweep for similar artifacts on lateral targets.  
+
+### LONG-TERM
+
+- Enforce MFA for all remote access including RDP.  
+- Implement Zero Trust network segmentation to reduce lateral movement.  
+- Harden endpoints: remove admin rights, enforce Defender policies.  
 
 ---
 
 ## APPENDIX
 
-### A. Key Indicators of Compromise (IOCs)
+### A. Indicators of Compromise
 
-| Type        | Value                     | Description                          |
-|-------------|---------------------------|--------------------------------------|
-| IP Address  | 88.97.178.12              | Attacker RDP source                  |
-| IP Address  | 78.141.196.6              | Command & Control server             |
-| File        | wupdate.ps1               | Malicious execution script           |
-| File        | mm.exe                    | Credential theft tool (Mimikatz variant) |
-| File        | export-data.zip           | Staged and exfiltrated data archive  |
-| Account     | kenji.sato                | Compromised legitimate user          |
-| Account     | support                   | Malicious persistence account        |
-| Domain      | discord.com               | Exfiltration channel (webhook)       |
-| Hash        | N/A                       | Hash not available                   |
-
-### B. MITRE ATT&CK Mapping
-
-| Tactic            | Technique ID     | Technique Name                               | Evidence                               | Flag # |
-|------------------|-----------------|---------------------------------------------|----------------------------------------|--------|
-| Initial Access    | T1078            | Valid Accounts                               | RDP login using stolen credentials     | 1–2 |
-| Execution         | T1059.001        | PowerShell                                    | wupdate.ps1 execution                  | 18 |
-| Persistence       | T1053.005        | Scheduled Task                                | Windows Update Check                   | 8–9 |
-| Defense Evasion   | T1562            | Impair Defenses                               | Defender exclusions, hidden folder     | 4–7 |
-| Discovery         | T1018            | Remote System Discovery                       | arp -a                                 | 3 |
-| Credential Access | T1003.001        | LSASS Memory                                  | mm.exe, sekurlsa::logonpasswords       | 13 |
-| Lateral Movement  | T1021.001        | Remote Services: RDP                          | mstsc.exe to 10.1.0.188                | 19–20 |
-| Collection        | T1560            | Archive Collected Data                        | export-data.zip                        | 14 |
-| Command & Control | T1071.001        | Application Layer Protocol: Web Protocols     | svchost.exe → 78.141.196.6:443         | 10–11 |
-| Exfiltration      | T1567.002        | Exfiltration Over Web Service (Discord)       | Discord webhook                        | 15 |
-| Impact            | T1565.002        | Stored Data Manipulation                      | Cleared Security logs                  | 16 |
-
-### C. Investigation Timeline
-
-| Time (UTC)               | Event                                         | Evidence Source           |
-|---------------------------|-----------------------------------------------|---------------------------|
-| Nov 19, 2025 11:33:40 AM | RDP session initiated                         | mstsc.exe                |
-| Nov 19, 2025 11:37:40 AM | wupdate.ps1 downloaded                        | PowerShell logs          |
-| Nov 19, 2025 11:37:41 AM | Malicious script executed                     | PowerShell logs          |
-| Nov 19, 2025 11:46:27 AM | wupdate.bat downloaded                        | PowerShell logs          |
-| Nov 19, 2025 11:49:27 AM | Temporary folder and hidden cache created, Defender path exclusions added | Registry & File events |
-| Nov 19, 2025 11:49:47 AM | wupdate.ps1 re-downloaded                     | PowerShell logs          |
-| Nov 19, 2025 12:03:17 PM | Malicious script run                           | ProcessCommandLine       |
-| Nov 19, 2025 12:05:11 PM | Credential stored for RDP                      | DeviceProcessEvents      |
-| Nov 19, 2025 12:05:33 PM | File attribute changed (attrib.exe +h +s)     | DeviceProcessEvents      |
-| Nov 19, 2025 12:06:58 PM | Payload downloaded via certutil.exe           | DeviceProcessEvents      |
-| Nov 19, 2025 12:07:01 PM | svchost.exe created in WindowsCache folder    | DeviceFileEvents         |
-| Nov 19, 2025 12:07:21 PM | mm.exe executed with sekurlsa::logonpasswords | DeviceProcessEvents      |
-| Nov 19, 2025 12:07:22 PM | mm.exe created for credential harvesting      | DeviceFileEvents         |
-| Nov 19, 2025 12:07:46 PM | Scheduled task 'Windows Update Check' created | schtasks.exe             |
-| Nov 19, 2025 12:08:26 PM | Credential harvesting complete                 | mm.exe                   |
-| Nov 19, 2025 12:08:58 PM | Collected data compressed to export-data.zip | DeviceFileEvents         |
-| Nov 19, 2025 12:09:21 PM | Data exfiltrated via Discord webhook         | curl.exe                 |
-| Nov 19, 2025 12:09:48 PM | Backdoor user 'support' created               | net.exe                  |
-| Nov 19, 2025 12:10:41 PM | Lateral movement attempted to 10.1.0.188 via RDP | mstsc.exe & cmdkey.exe  |
-| Nov 19, 2025 12:11:04 PM | C2 communication initiated to 78.141.196.6:443 | DeviceNetworkEvents     |
-| Nov 19, 2025 12:11:39 PM | Security log cleared                           | wevtutil.exe             |
-| Nov 19, 2025 12:11:43 PM | System log cleared                             | wevtutil.exe             |
-| Nov 19, 2025 12:11:46 PM | Application log cleared                        | wevtutil.exe             |
-| Nov 19, 2025 12:45:26 PM | Defender manifest installation started        | wevtutil.exe             |
-| Nov 19, 2025 12:45:35 PM | Defender manifest installation completed      | wevtutil.exe             |
-
-
-# Security Investigation Report
-
-## C. Investigation Timeline
-
-## C. Investigation Timeline
-
-| Time (UTC)               | Event                                         | Evidence Source           |
-|---------------------------|-----------------------------------------------|---------------------------|
-| Nov 19, 2025 11:33:40 AM | RDP session initiated                         | mstsc.exe                |
-| Nov 19, 2025 11:37:40 AM | wupdate.ps1 downloaded                        | PowerShell logs          |
-| Nov 19, 2025 11:37:41 AM | Malicious script executed                     | PowerShell logs          |
-| Nov 19, 2025 11:46:27 AM | wupdate.bat downloaded                        | PowerShell logs          |
-| Nov 19, 2025 11:49:27 AM | Temporary folder and hidden cache created, Defender path exclusions added | Registry & File events |
-| Nov 19, 2025 11:49:47 AM | wupdate.ps1 re-downloaded                     | PowerShell logs          |
-| Nov 19, 2025 12:03:17 PM | Malicious script run                           | ProcessCommandLine       |
-| Nov 19, 2025 12:05:11 PM | Credential stored for RDP                      | DeviceProcessEvents      |
-| Nov 19, 2025 12:05:33 PM | File attribute changed (attrib.exe +h +s)     | DeviceProcessEvents      |
-| Nov 19, 2025 12:06:58 PM | Payload downloaded via certutil.exe           | DeviceProcessEvents      |
-| Nov 19, 2025 12:07:01 PM | svchost.exe created in WindowsCache folder    | DeviceFileEvents         |
-| Nov 19, 2025 12:07:21 PM | mm.exe executed with sekurlsa::logonpasswords | DeviceProcessEvents      |
-| Nov 19, 2025 12:07:22 PM | mm.exe created for credential harvesting      | DeviceFileEvents         |
-| Nov 19, 2025 12:07:46 PM | Scheduled task 'Windows Update Check' created | schtasks.exe             |
-| Nov 19, 2025 12:08:26 PM | Credential harvesting complete                 | mm.exe                   |
-| Nov 19, 2025 12:08:58 PM | Collected data compressed to export-data.zip | DeviceFileEvents         |
-| Nov 19, 2025 12:09:21 PM | Data exfiltrated via Discord webhook         | curl.exe                 |
-| Nov 19, 2025 12:09:48 PM | Backdoor user 'support' created               | net.exe                  |
-| Nov 19, 2025 12:10:41 PM | Lateral movement attempted to 10.1.0.188 via RDP | mstsc.exe & cmdkey.exe  |
-| Nov 19, 2025 12:11:04 PM | C2 communication initiated to 78.141.196.6:443 | DeviceNetworkEvents     |
-| Nov 19, 2025 12:11:39 PM | Security log cleared                           | wevtutil.exe             |
-| Nov 19, 2025 12:11:43 PM | System log cleared                             | wevtutil.exe             |
-| Nov 19, 2025 12:11:46 PM | Application log cleared                        | wevtutil.exe             |
-| Nov 19, 2025 12:45:26 PM | Defender manifest installation started        | wevtutil.exe             |
-| Nov 19, 2025 12:45:35 PM | Defender manifest installation completed      | wevtutil.exe             |
-
+| Category | Indicator | Description |
+| --- | --- | --- |
+| Attacker IP | 88.97.178.12 | Initial RDP source |
+| C2 Server | 78.141.196.6 | Command & Control server |
+| Malicious Files | `wupdate.ps1`, `mm.exe`, `export-data.zip` | Execution, credential theft, data exfiltration |
+| Accounts | kenji.sato, support | Compromised & persistent accounts |
+| Domain | discord.com | Exfiltration channel |
 
 ---
 
-## D. Evidence - KQL Queries & Screenshots
+### B. MITRE ATT&CK Mapping
 
-The following queries cover activities between 19–20 November 2025.  
-Each flag contains **Query**, **Results**, and **Screenshot** placeholders.
+| Tactic | Technique | ID | Evidence |
+| --- | --- | --- | --- |
+| Initial Access | Valid Accounts | T1078 | RDP login using stolen credentials |
+| Execution | PowerShell | T1059.001 | `wupdate.ps1` |
+| Persistence | Scheduled Task | T1053.005 | `Windows Update Check` |
+| Defense Evasion | Impair Defenses | T1562 | Hidden folder, Defender exclusions |
+| Credential Access | LSASS Memory | T1003.001 | `mm.exe`, `sekurlsa::logonpasswords` |
+| Lateral Movement | Remote Services: RDP | T1021.001 | `mstsc.exe` to 10.1.0.188 |
+| Collection | Archive Collected Data | T1560 | `export-data.zip` |
+| Command & Control | Application Layer Protocol: Web | T1071.001 | `svchost.exe` → 78.141.196.6:443 |
+| Exfiltration | Exfiltration Over Web Service | T1567.002 | Discord webhook |
+| Impact | Stored Data Manipulation | T1565.002 | Cleared Security logs |
+
+---
+
+### C. Investigation Timeline
+
+| Time | Event | Details |
+| --- | --- | --- |
+| Nov 19, 2025 11:33:00 AM | RDP session initiated | mstsc.exe |
+| Nov 19, 2025 11:37:40 AM | wupdate.ps1 downloaded & executed | PowerShell logs |
+| Nov 19, 2025 11:46:12 AM | wupdate.bat downloaded | PowerShell logs |
+| Nov 19, 2025 11:49:05 AM | Hidden cache created, Defender exclusions | Registry & File events |
+| Nov 19, 2025 12:03:21 PM | Malicious script run | ProcessCommandLine |
+| Nov 19, 2025 12:07:04 PM | Credential harvesting started | mm.exe |
+| Nov 19, 2025 12:07:35 PM | Scheduled task created | `Windows Update Check` |
+| Nov 19, 2025 12:08:11 PM | Data compressed | export-data.zip |
+| Nov 19, 2025 12:09:02 PM | Data exfiltrated | Discord webhook via curl.exe |
+| Nov 19, 2025 12:09:42 PM | Backdoor account created | net.exe |
+| Nov 19, 2025 12:10:17 PM | Lateral movement attempted | mstsc.exe & cmdkey.exe |
+| Nov 19, 2025 12:11:05 PM | Logs cleared & C2 communication | wevtutil.exe & network logs |
+| Nov 19, 2025 12:45:00 PM | Defender manifest installation completed | wevtutil.exe |
+
+---
+
+### D. Evidence & Screenshots
+
+- All screenshots attached with each query/flag.  
+- Full query results attached.  
+- Network logs reviewed.  
+- File hashes documented where available.  
+
+---
+
+## E. Investigation Queries
 
 ---
 
