@@ -501,13 +501,6 @@ Results: **mstsc.exe**
 
 <img width="1010" height="304" alt="Flag 20" src="https://github.com/user-attachments/assets/c52bced6-dc70-4f02-83cc-e8cf8ea7a819" />
 
-## E. Supporting Evidence
-
-- ☒ All screenshots attached  
-- ☒ Full query results attached  
-- ☒ Network logs reviewed  
-- ☒ File hashes documented  
-
 ---
 
 **Report Completed By:** Ayca Sanli  
