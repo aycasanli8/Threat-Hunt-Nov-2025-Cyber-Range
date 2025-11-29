@@ -26,15 +26,15 @@ Based on the breadth of actions performed—including credential access, data th
 ## INCIDENT DETAILS
 
 ### Timeline
-- **First Malicious Activity:** 19-Nov-2025 11:30 UTC  
-- **Last Observed Activity:** 19-Nov-2025 16:23 UTC  
-- **Total Duration:** ~5 hours  
+- **First Malicious Activity:** 19-Nov-2025 11:33 AM UTC  
+- **Last Observed Activity:** 19-Nov-2025 12:45 PM UTC  
+- **Total Duration:** ~1 hour 12 minutes  
 
 ### Attack Overview
 - **Initial Access Method:** RDP via stolen credentials  
 - **Compromised Account:** kenji.sato  
 - **Affected System:** AZUKI-SL  
-- **Attacker IP Address:** 88.97.178.12  
+- **Attacker IP Address:** 78.141.196.6  
 
 ### Attack Chain (What did the attacker do?)
 - **Initial Access (TA0001):** Attacker logged in via RDP from `88.97.178.12` using stolen credentials of `kenji.sato`.  
@@ -61,11 +61,11 @@ Based on the breadth of actions performed—including credential access, data th
 | IP Address       | 78.141.196.6              | Command & Control server             |
 | File             | wupdate.ps1               | Malicious execution script           |
 | File             | mm.exe                    | Credential theft tool                |
-| File             | export-data.zip           | Collected data archive               |
+| File             | export-data.zip           | Staged and exfiltrated data archive  |
 | Account          | kenji.sato                | Compromised legitimate user          |
-| Account          | support                   | Malicious persistence account        |
+| Account          | support                   | Persistent backdoor account          |
 | Domain           | discord.com               | Exfiltration channel                 |
-| Hash             | (mm.exe hash if available)| Credential dumper                    |
+| Hash             | N/A                        | Hash not available                  |
 
 ---
 
@@ -92,65 +92,99 @@ Based on the breadth of actions performed—including credential access, data th
 
 ### A. Key Indicators of Compromise (IOCs)
 
-| Type    | Value                      | Description                     |
-|---------|---------------------------|---------------------------------|
-| IP Address | 88.97.178.12            | Attacker RDP source              |
-| IP Address | 78.141.196.6            | Command & Control server         |
-| File      | wupdate.ps1               | Malicious execution script       |
-| File      | mm.exe                    | Credential theft tool            |
-| File      | export-data.zip           | Collected data archive           |
-| Account   | kenji.sato                | Compromised legitimate user      |
-| Account   | support                   | Malicious persistence account    |
-| Domain    | discord.com               | Exfiltration channel             |
-| Hash      | (mm.exe hash if available)| Credential dumper                |
+| Type        | Value                     | Description                          |
+|-------------|---------------------------|--------------------------------------|
+| IP Address  | 88.97.178.12              | Attacker RDP source                  |
+| IP Address  | 78.141.196.6              | Command & Control server             |
+| File        | wupdate.ps1               | Malicious execution script           |
+| File        | mm.exe                    | Credential theft tool (Mimikatz variant) |
+| File        | export-data.zip           | Staged and exfiltrated data archive  |
+| Account     | kenji.sato                | Compromised legitimate user          |
+| Account     | support                   | Malicious persistence account        |
+| Domain      | discord.com               | Exfiltration channel (webhook)       |
+| Hash        | N/A                       | Hash not available                   |
 
 ### B. MITRE ATT&CK Mapping
 
-| Tactic            | Technique ID     | Technique Name                     | Evidence                       | Flag # |
-|------------------|-----------------|-----------------------------------|--------------------------------|--------|
-| Initial Access    | T1078            | Valid Accounts                     | RDP login using stolen credentials | 1–2 |
-| Execution         | T1059.001        | PowerShell                          | wupdate.ps1 execution          | 18 |
-| Persistence       | T1053.005        | Scheduled Task                      | Windows Update Check           | 8–9 |
-| Defense Evasion   | T1562            | Impair Defenses                     | Defender exclusions, hidden folder | 4–7 |
-| Discovery         | T1018            | Network Discovery                   | arp -a                         | 3 |
-| Credential Access | T1003.001        | LSASS Memory                        | mm.exe, sekurlsa::logonpasswords | 13 |
-| Lateral Movement  | T1021.001        | RDP                                 | mstsc.exe to 10.1.0.188        | 19–20 |
-| Collection        | T1560            | Archive Collected Data              | export-data.zip                | 14 |
-| Command & Control | T1071.001        | Web Protocols                        | svchost.exe → 78.141.196.6:443 | 10–11 |
-| Exfiltration      | T1567.002        | Exfiltration Over Web Service        | Discord webhook                | 15 |
-| Impact            | T1565.002        | Data Destruction/Tamper             | Cleared Security logs          | 16 |
+| Tactic            | Technique ID     | Technique Name                               | Evidence                               | Flag # |
+|------------------|-----------------|---------------------------------------------|----------------------------------------|--------|
+| Initial Access    | T1078            | Valid Accounts                               | RDP login using stolen credentials     | 1–2 |
+| Execution         | T1059.001        | PowerShell                                    | wupdate.ps1 execution                  | 18 |
+| Persistence       | T1053.005        | Scheduled Task                                | Windows Update Check                   | 8–9 |
+| Defense Evasion   | T1562            | Impair Defenses                               | Defender exclusions, hidden folder     | 4–7 |
+| Discovery         | T1018            | Remote System Discovery                       | arp -a                                 | 3 |
+| Credential Access | T1003.001        | LSASS Memory                                  | mm.exe, sekurlsa::logonpasswords       | 13 |
+| Lateral Movement  | T1021.001        | Remote Services: RDP                          | mstsc.exe to 10.1.0.188                | 19–20 |
+| Collection        | T1560            | Archive Collected Data                        | export-data.zip                        | 14 |
+| Command & Control | T1071.001        | Application Layer Protocol: Web Protocols     | svchost.exe → 78.141.196.6:443         | 10–11 |
+| Exfiltration      | T1567.002        | Exfiltration Over Web Service (Discord)       | Discord webhook                        | 15 |
+| Impact            | T1565.002        | Stored Data Manipulation                      | Cleared Security logs                  | 16 |
 
 ### C. Investigation Timeline
 
-| Time (UTC) | Event                        | Evidence Source           |
-|------------|------------------------------|---------------------------|
-| 11:30      | Script execution begins      | DeviceProcessEvents       |
-| 11:37      | wupdate.ps1 downloaded       | PowerShell logs           |
-| 12:03      | Malicious script run         | ProcessCommandLine        |
-| 12:09      | Backdoor account created     | net.exe logs              |
-| 12:09      | Data staging begins          | WindowsCache artifacts    |
-| 12:11      | Logs cleared                 | wevtutil                  |
-| 12:09–12:10| Credential harvesting        | mm.exe                     |
-| 12:09      | Data compressed              | export-data.zip           |
-| 12:09      | Exfiltration via Discord     | curl.exe                  |
-| Later      | Lateral movement to 10.1.0.188 attempted | mstsc.exe          |
+| Time (UTC)               | Event                                         | Evidence Source           |
+|---------------------------|-----------------------------------------------|---------------------------|
+| Nov 19, 2025 11:33:40 AM | RDP session initiated                         | mstsc.exe                |
+| Nov 19, 2025 11:37:40 AM | wupdate.ps1 downloaded                        | PowerShell logs          |
+| Nov 19, 2025 11:37:41 AM | Malicious script executed                     | PowerShell logs          |
+| Nov 19, 2025 11:46:27 AM | wupdate.bat downloaded                        | PowerShell logs          |
+| Nov 19, 2025 11:49:27 AM | Temporary folder and hidden cache created, Defender path exclusions added | Registry & File events |
+| Nov 19, 2025 11:49:47 AM | wupdate.ps1 re-downloaded                     | PowerShell logs          |
+| Nov 19, 2025 12:03:17 PM | Malicious script run                           | ProcessCommandLine       |
+| Nov 19, 2025 12:05:11 PM | Credential stored for RDP                      | DeviceProcessEvents      |
+| Nov 19, 2025 12:05:33 PM | File attribute changed (attrib.exe +h +s)     | DeviceProcessEvents      |
+| Nov 19, 2025 12:06:58 PM | Payload downloaded via certutil.exe           | DeviceProcessEvents      |
+| Nov 19, 2025 12:07:01 PM | svchost.exe created in WindowsCache folder    | DeviceFileEvents         |
+| Nov 19, 2025 12:07:21 PM | mm.exe executed with sekurlsa::logonpasswords | DeviceProcessEvents      |
+| Nov 19, 2025 12:07:22 PM | mm.exe created for credential harvesting      | DeviceFileEvents         |
+| Nov 19, 2025 12:07:46 PM | Scheduled task 'Windows Update Check' created | schtasks.exe             |
+| Nov 19, 2025 12:08:26 PM | Credential harvesting complete                 | mm.exe                   |
+| Nov 19, 2025 12:08:58 PM | Collected data compressed to export-data.zip | DeviceFileEvents         |
+| Nov 19, 2025 12:09:21 PM | Data exfiltrated via Discord webhook         | curl.exe                 |
+| Nov 19, 2025 12:09:48 PM | Backdoor user 'support' created               | net.exe                  |
+| Nov 19, 2025 12:10:41 PM | Lateral movement attempted to 10.1.0.188 via RDP | mstsc.exe & cmdkey.exe  |
+| Nov 19, 2025 12:11:04 PM | C2 communication initiated to 78.141.196.6:443 | DeviceNetworkEvents     |
+| Nov 19, 2025 12:11:39 PM | Security log cleared                           | wevtutil.exe             |
+| Nov 19, 2025 12:11:43 PM | System log cleared                             | wevtutil.exe             |
+| Nov 19, 2025 12:11:46 PM | Application log cleared                        | wevtutil.exe             |
+| Nov 19, 2025 12:45:26 PM | Defender manifest installation started        | wevtutil.exe             |
+| Nov 19, 2025 12:45:35 PM | Defender manifest installation completed      | wevtutil.exe             |
+
 
 # Security Investigation Report
 
 ## C. Investigation Timeline
 
-| Time (UTC) | Event                        | Evidence Source           |
-|------------|------------------------------|---------------------------|
-| 11:30      | Script execution begins      | DeviceProcessEvents       |
-| 11:37      | wupdate.ps1 downloaded       | PowerShell logs           |
-| 12:03      | Malicious script run         | ProcessCommandLine        |
-| 12:09      | Backdoor account created     | net.exe logs              |
-| 12:09      | Data staging begins          | WindowsCache artifacts    |
-| 12:11      | Logs cleared                 | wevtutil                  |
-| 12:09–12:10| Credential harvesting        | mm.exe                     |
-| 12:09      | Data compressed              | export-data.zip           |
-| 12:09      | Exfiltration via Discord     | curl.exe                  |
-| Later      | Lateral movement to 10.1.0.188 attempted | mstsc.exe          |
+## C. Investigation Timeline
+
+| Time (UTC)               | Event                                         | Evidence Source           |
+|---------------------------|-----------------------------------------------|---------------------------|
+| Nov 19, 2025 11:33:40 AM | RDP session initiated                         | mstsc.exe                |
+| Nov 19, 2025 11:37:40 AM | wupdate.ps1 downloaded                        | PowerShell logs          |
+| Nov 19, 2025 11:37:41 AM | Malicious script executed                     | PowerShell logs          |
+| Nov 19, 2025 11:46:27 AM | wupdate.bat downloaded                        | PowerShell logs          |
+| Nov 19, 2025 11:49:27 AM | Temporary folder and hidden cache created, Defender path exclusions added | Registry & File events |
+| Nov 19, 2025 11:49:47 AM | wupdate.ps1 re-downloaded                     | PowerShell logs          |
+| Nov 19, 2025 12:03:17 PM | Malicious script run                           | ProcessCommandLine       |
+| Nov 19, 2025 12:05:11 PM | Credential stored for RDP                      | DeviceProcessEvents      |
+| Nov 19, 2025 12:05:33 PM | File attribute changed (attrib.exe +h +s)     | DeviceProcessEvents      |
+| Nov 19, 2025 12:06:58 PM | Payload downloaded via certutil.exe           | DeviceProcessEvents      |
+| Nov 19, 2025 12:07:01 PM | svchost.exe created in WindowsCache folder    | DeviceFileEvents         |
+| Nov 19, 2025 12:07:21 PM | mm.exe executed with sekurlsa::logonpasswords | DeviceProcessEvents      |
+| Nov 19, 2025 12:07:22 PM | mm.exe created for credential harvesting      | DeviceFileEvents         |
+| Nov 19, 2025 12:07:46 PM | Scheduled task 'Windows Update Check' created | schtasks.exe             |
+| Nov 19, 2025 12:08:26 PM | Credential harvesting complete                 | mm.exe                   |
+| Nov 19, 2025 12:08:58 PM | Collected data compressed to export-data.zip | DeviceFileEvents         |
+| Nov 19, 2025 12:09:21 PM | Data exfiltrated via Discord webhook         | curl.exe                 |
+| Nov 19, 2025 12:09:48 PM | Backdoor user 'support' created               | net.exe                  |
+| Nov 19, 2025 12:10:41 PM | Lateral movement attempted to 10.1.0.188 via RDP | mstsc.exe & cmdkey.exe  |
+| Nov 19, 2025 12:11:04 PM | C2 communication initiated to 78.141.196.6:443 | DeviceNetworkEvents     |
+| Nov 19, 2025 12:11:39 PM | Security log cleared                           | wevtutil.exe             |
+| Nov 19, 2025 12:11:43 PM | System log cleared                             | wevtutil.exe             |
+| Nov 19, 2025 12:11:46 PM | Application log cleared                        | wevtutil.exe             |
+| Nov 19, 2025 12:45:26 PM | Defender manifest installation started        | wevtutil.exe             |
+| Nov 19, 2025 12:45:35 PM | Defender manifest installation completed      | wevtutil.exe             |
+
 
 ---
 
