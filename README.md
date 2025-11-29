@@ -69,7 +69,6 @@
 | Nov 19, 2025 12:09:42 PM | Backdoor user `support` created |
 | Nov 19, 2025 12:10:17 PM | Lateral movement attempted to 10.1.0.188 |
 | Nov 19, 2025 12:11:05 PM | Logs cleared & C2 communication initiated |
-| Nov 19, 2025 12:45:00 PM | Defender manifest installation completed |
 
 ---
 
@@ -195,7 +194,6 @@
 | Nov 19, 2025 12:09:42 PM | Backdoor account created | net.exe |
 | Nov 19, 2025 12:10:17 PM | Lateral movement attempted | mstsc.exe & cmdkey.exe |
 | Nov 19, 2025 12:11:05 PM | Logs cleared & C2 communication | wevtutil.exe & network logs |
-| Nov 19, 2025 12:45:00 PM | Defender manifest installation completed | wevtutil.exe |
 
 ---
 
@@ -205,7 +203,6 @@
 - Full query results attached.  
 - Network logs reviewed.  
 - File hashes documented where available.  
-
 ---
 
 ## E. Investigation Queries
