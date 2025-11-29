@@ -236,7 +236,7 @@ Results: **3**
 ```kql
 DeviceRegistryEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "AZUKI-SL"
+| where DeviceName == "azuki-sl"
 | where RegistryKey has @"SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths"
 | project Timestamp, RegistryValueName, RegistryKey, DeviceName
 | order by Timestamp asc
@@ -250,7 +250,7 @@ Results: **C:\Users\KENJI~1.SAT\AppData\Local\Temp**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "AZUKI-SL"
+| where DeviceName == "azuki-sl"
 | where ProcessCommandLine has_any ("http://", "https://")
 | project Timestamp, FileName, ProcessCommandLine, AccountName, DeviceName
 | order by Timestamp asc
@@ -264,7 +264,7 @@ Results: **certutil.exe**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where FileName =~ "schtasks.exe"
 | where ProcessCommandLine contains "/create"
 | project Timestamp, AccountName, FileName, ProcessCommandLine
@@ -279,7 +279,7 @@ Results: **Windows Update Check**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where FileName =~ "schtasks.exe"
 | where ProcessCommandLine contains "/create"
 | project Timestamp, AccountName, FileName, ProcessCommandLine
@@ -294,7 +294,7 @@ Results: **C:\ProgramData\WindowsCache\svchost.exe**
 ```kql
 DeviceNetworkEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where InitiatingProcessFileName =~ "svchost.exe"
 | where InitiatingProcessFolderPath contains "ProgramData\\WindowsCache"
 | project Timestamp, RemoteIP, RemotePort, InitiatingProcessFileName, InitiatingProcessFolderPath
@@ -309,7 +309,7 @@ Results: **78.141.196.6**
 ```kql
 DeviceNetworkEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where InitiatingProcessFileName =~ "svchost.exe"
 | where InitiatingProcessFolderPath contains "ProgramData\\WindowsCache"
 | project Timestamp, RemoteIP, RemotePort, InitiatingProcessFileName, InitiatingProcessFolderPath
@@ -324,7 +324,7 @@ Results: **443**
 ```kql
 DeviceFileEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "AZUKI-SL"
+| where DeviceName == "azuki-sl"
 | where FolderPath startswith "C:\\ProgramData\\WindowsCache"
 | where FileName endswith ".exe"
 | project Timestamp, FileName, FolderPath, ActionType, DeviceName
@@ -339,7 +339,7 @@ Results: **mm.exe**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "AZUKI-SL"
+| where DeviceName == "azuki-sl"
 | where FileName =~ "mm.exe" or ProcessCommandLine contains "mm.exe"
 | project Timestamp, AccountName, FileName, ProcessCommandLine
 | order by Timestamp asc 
@@ -353,7 +353,7 @@ Results: **sekurlsa::logonpasswords**
 ```kql
 DeviceFileEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "AZUKI-SL"
+| where DeviceName == "azuki-sl"
 | where FolderPath contains "C:\\ProgramData\\WindowsCache"
 | where FileName endswith ".zip"
 | project Timestamp, FileName, FolderPath, ActionType, DeviceName
@@ -367,7 +367,7 @@ Results: **export-data.zip**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where FileName =~ "curl.exe"
 | project Timestamp, FileName, ProcessCommandLine
 
@@ -381,7 +381,7 @@ Results: **Discord**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where ProcessCommandLine contains "wevtutil"
 | where ProcessCommandLine contains "cl"
 | project Timestamp, AccountName, FileName, ProcessCommandLine
@@ -396,7 +396,7 @@ Results: **Security**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where ProcessCommandLine contains "net.exe"
 | where ProcessCommandLine contains "user"
 | where ProcessCommandLine contains "/add"
@@ -412,7 +412,7 @@ Results: **support**
 ```kql
 DeviceProcessEvents
 | where Timestamp between (datetime(2025-11-19) .. datetime(2025-11-20))
-| where DeviceName =~ "azuki-sl"
+| where DeviceName == "azuki-sl"
 | where AccountName == "kenji.sato"
 | where FileName == "powershell.exe"
 | where ProcessCommandLine has ".ps1"
